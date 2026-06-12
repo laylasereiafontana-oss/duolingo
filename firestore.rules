@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Validation blueprints
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'name', 'email', 'role', 'xp', 'level', 'completedStages', 'teacherEmail', 'lastSyncedAt'])
+        && data.keys().size() == 9
+        && data.uid is string && data.uid.size() <= 128
+        && data.name is string && data.name.size() <= 200
+        && data.email is string && data.email.size() <= 200
+        && (data.role == 'student' || data.role == 'teacher')
+        && data.xp is int && data.xp >= 0
+        && data.level is int && data.level >= 0
+        && data.completedStages is list && data.completedStages.size() <= 100
+        && data.teacherEmail is string && data.teacherEmail.size() <= 200
+        && data.lastSyncedAt is string && data.lastSyncedAt.size() <= 128;
+    }
+
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasAll(['uid', 'name', 'xp', 'completedCount'])
+        && data.keys().size() == 4
+        && data.uid is string && data.uid.size() <= 128
+        && data.name is string && data.name.size() <= 200
+        && data.xp is int && data.xp >= 0
+        && data.completedCount is int && data.completedCount >= 0;
+    }
+
+    // match user profile
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isValidUserProfile(incoming());
+      allow delete: if false;
+    }
+
+    // match leaderboard
+    match /leaderboard/{entryId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isOwner(entryId) && isValidLeaderboardEntry(incoming());
+      allow update: if isOwner(entryId) && isValidLeaderboardEntry(incoming())
+        && incoming().uid == existing().uid;
+      allow delete: if false;
+    }
+  }
+}

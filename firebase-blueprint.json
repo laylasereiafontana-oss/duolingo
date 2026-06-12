@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing XP details for coding progression.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "xp": { "type": "integer" },
+        "level": { "type": "integer" },
+        "completedStages": { "type": "array" },
+        "teacherEmail": { "type": "string" },
+        "lastSyncedAt": { "type": "string" }
+      },
+      "required": ["uid", "name", "email", "role", "xp", "level", "completedStages", "teacherEmail", "lastSyncedAt"]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Leaderboard entry for high scoring coding students.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "xp": { "type": "integer" },
+        "completedCount": { "type": "integer" }
+      },
+      "required": ["uid", "name", "xp", "completedCount"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profiles. Users can read and write their own profile."
+    },
+    "/leaderboard/{entryId}": {
+      "schema": "LeaderboardEntry",
+      "description": "Global leaderboard values. Authenticated users can list and update their own scoreboard entry."
+    }
+  }
+}

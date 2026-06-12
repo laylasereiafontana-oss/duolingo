@@ -1,0 +1,6 @@
+{
+  "name": "Aventura dos Blocos de Código",
+  "description": "Um jogo educativo para aprender a programar com lógica de blocos, editor em tempo real, rankings globais, salvamento na nuvem e relatórios de desempenho de professores com feedback de IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
